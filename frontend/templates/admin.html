@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EduNexus — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:#0b0f1a; --surface:#111827; --card:#1a2236; --border:#1f2d45;
+  --accent:#3b82f6; --accent2:#06b6d4; --accent3:#8b5cf6;
+  --green:#10b981; --yellow:#f59e0b; --red:#ef4444; --orange:#f97316;
+  --text:#e2e8f0; --muted:#64748b;
+  --font-head:'Syne',sans-serif; --font-body:'DM Sans',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes gradShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+
+/* ── LOGIN ── */
+#login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 30% 60%,#1e3a5f44,transparent 60%),var(--bg);}
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:3rem;width:100%;max-width:420px;animation:fadeUp .4s ease;}
+.login-logo{font-family:var(--font-head);font-size:1.8rem;font-weight:800;margin-bottom:.3rem;
+  background:linear-gradient(135deg,var(--orange),var(--red));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.login-sub{color:var(--muted);font-size:.85rem;margin-bottom:2rem;}
+.field{margin-bottom:1.2rem;}
+.field label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:.5rem;letter-spacing:.05em;text-transform:uppercase;}
+.field input{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:.8rem 1rem;border-radius:10px;font-family:var(--font-body);font-size:.9rem;outline:none;transition:border-color .2s;}
+.field input:focus{border-color:var(--orange);}
+.login-btn{width:100%;padding:.9rem;border-radius:10px;border:none;background:linear-gradient(135deg,var(--orange),var(--red));color:#fff;font-family:var(--font-head);font-size:1rem;font-weight:700;cursor:pointer;transition:opacity .2s;}
+.login-btn:hover{opacity:.9;}
+.login-err{color:var(--red);font-size:.82rem;margin-bottom:.5rem;display:none;}
+.login-hint{font-size:.75rem;color:var(--muted);text-align:center;margin-top:1rem;}
+
+/* ── SHELL ── */
+#app{display:none;min-height:100vh;}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;display:flex;flex-direction:column;z-index:50;overflow-y:auto;}
+.sidebar-logo{font-family:var(--font-head);font-size:1.2rem;font-weight:800;padding:.5rem .8rem 1.5rem;
+  background:linear-gradient(135deg,var(--orange),var(--red));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sidebar-badge{font-size:.65rem;background:#f9731620;color:var(--orange);border:1px solid #f9731640;padding:.15rem .5rem;border-radius:99px;margin-left:.5rem;vertical-align:middle;}
+.sidebar-section{font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:.4rem .8rem;margin-top:1rem;}
+.nav-item{display:flex;align-items:center;gap:.8rem;padding:.65rem .8rem;border-radius:10px;cursor:pointer;font-size:.88rem;color:var(--muted);transition:all .2s;margin-bottom:.15rem;}
+.nav-item:hover{background:var(--card);color:var(--text);}
+.nav-item.active{background:linear-gradient(135deg,#f9731620,#ef444415);color:var(--orange);border:1px solid #f9731630;}
+.nav-item span.ic{font-size:1rem;}
+.sidebar-footer{margin-top:auto;border-top:1px solid var(--border);padding-top:1rem;}
+.user-chip{display:flex;align-items:center;gap:.8rem;padding:.6rem .8rem;}
+.user-avatar{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--orange),var(--red));display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:700;font-size:.9rem;color:#fff;flex-shrink:0;}
+.user-info .uname{font-size:.85rem;font-weight:500;}
+.user-info .urole{font-size:.72rem;color:var(--orange);}
+.logout-btn{width:100%;margin-top:.5rem;background:none;border:1px solid var(--border);color:var(--muted);padding:.55rem;border-radius:8px;cursor:pointer;font-family:var(--font-body);font-size:.82rem;transition:all .2s;}
+.logout-btn:hover{border-color:var(--red);color:var(--red);}
+
+.main{margin-left:240px;padding:2rem;min-height:100vh;}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;}
+.topbar h2{font-family:var(--font-head);font-size:1.5rem;font-weight:700;}
+.topbar .date{font-size:.83rem;color:var(--muted);}
+
+/* ── CARDS ── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.3rem 1.2rem;position:relative;overflow:hidden;}
+.stat-card::after{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;opacity:.07;}
+.stat-card.orange::after{background:var(--orange);}
+.stat-card.blue::after{background:var(--accent);}
+.stat-card.green::after{background:var(--green);}
+.stat-card.purple::after{background:var(--accent3);}
+.stat-card.red::after{background:var(--red);}
+.stat-card.yellow::after{background:var(--yellow);}
+.stat-label{font-size:.72rem;color:var(--muted);letter-spacing:.05em;margin-bottom:.4rem;text-transform:uppercase;}
+.stat-value{font-family:var(--font-head);font-size:1.9rem;font-weight:800;}
+.stat-card.orange .stat-value{color:var(--orange);}
+.stat-card.blue .stat-value{color:var(--accent);}
+.stat-card.green .stat-value{color:var(--green);}
+.stat-card.purple .stat-value{color:var(--accent3);}
+.stat-card.red .stat-value{color:var(--red);}
+.stat-card.yellow .stat-value{color:var(--yellow);}
+.stat-sub{font-size:.73rem;color:var(--muted);margin-top:.3rem;}
+
+.section-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:1.5rem;}
+.section-head{padding:1.2rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;}
+.section-head h3{font-family:var(--font-head);font-size:1rem;font-weight:700;}
+
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+th{font-size:.7rem;color:var(--muted);text-align:left;padding:.8rem 1.2rem;border-bottom:1px solid var(--border);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;}
+td{padding:.8rem 1.2rem;font-size:.85rem;border-bottom:1px solid #1f2d4530;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#ffffff05;}
+
+/* ── BADGE ── */
+.badge{font-size:.68rem;padding:.2rem .65rem;border-radius:99px;font-weight:600;display:inline-block;white-space:nowrap;}
+.badge.green{background:#10b98120;color:var(--green);}
+.badge.yellow{background:#f59e0b20;color:var(--yellow);}
+.badge.red{background:#ef444420;color:var(--red);}
+.badge.blue{background:#3b82f620;color:var(--accent);}
+.badge.purple{background:#8b5cf620;color:var(--accent3);}
+.badge.orange{background:#f9731620;color:var(--orange);}
+
+/* ── BUTTONS ── */
+.btn{padding:.5rem 1.1rem;border-radius:8px;border:none;font-family:var(--font-body);font-size:.82rem;font-weight:500;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:.4rem;}
+.btn-primary{background:var(--orange);color:#fff;}
+.btn-primary:hover{background:#ea6b0a;}
+.btn-success{background:var(--green);color:#fff;}
+.btn-success:hover{background:#059669;}
+.btn-danger{background:#ef444420;color:var(--red);border:1px solid #ef444440;}
+.btn-danger:hover{background:var(--red);color:#fff;}
+.btn-edit{background:#3b82f620;color:var(--accent);border:1px solid #3b82f640;}
+.btn-edit:hover{background:var(--accent);color:#fff;}
+.btn-sm{padding:.35rem .8rem;font-size:.78rem;}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:#00000080;z-index:200;display:none;align-items:center;justify-content:center;padding:1rem;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;animation:fadeUp .3s ease;}
+.modal-head{padding:1.4rem 1.6rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-head h3{font-family:var(--font-head);font-size:1.1rem;font-weight:700;}
+.modal-close{background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;padding:.2rem .5rem;border-radius:6px;}
+.modal-close:hover{color:var(--text);background:var(--surface);}
+.modal-body{padding:1.4rem 1.6rem;}
+.modal-foot{padding:1rem 1.6rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:.8rem;}
+
+/* ── FORM ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.form-field{display:flex;flex-direction:column;gap:.4rem;}
+.form-field.full{grid-column:1/-1;}
+.form-field label{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+.form-field input,.form-field select,.form-field textarea{
+  background:var(--surface);border:1px solid var(--border);color:var(--text);
+  padding:.7rem .9rem;border-radius:8px;font-family:var(--font-body);font-size:.87rem;outline:none;transition:border-color .2s;}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--orange);}
+.form-field select option{background:var(--surface);}
+
+/* ── SEARCH ── */
+.search-bar{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:.6rem 1rem;border-radius:8px;font-family:var(--font-body);font-size:.85rem;outline:none;width:220px;transition:border-color .2s;}
+.search-bar:focus{border-color:var(--orange);}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:.5rem;margin-bottom:1.5rem;}
+.tab{padding:.55rem 1.2rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:var(--font-body);font-size:.85rem;cursor:pointer;transition:all .2s;}
+.tab.active{background:linear-gradient(135deg,#f9731620,#ef444415);color:var(--orange);border-color:#f9731640;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.4rem;font-size:.87rem;box-shadow:0 8px 32px #00000050;z-index:9999;display:none;animation:fadeUp .3s ease;}
+.toast.show{display:block;}
+.toast.err{border-color:var(--red);color:var(--red);}
+
+/* ── PANEL ── */
+.panel{display:none;animation:fadeUp .35s ease;}
+.panel.active{display:block;}
+
+/* ── NOTICE LIST ── */
+.notice-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:.7rem;}
+.notice-item h4{font-size:.88rem;font-weight:600;margin-bottom:.25rem;}
+.notice-item p{font-size:.8rem;color:var(--muted);line-height:1.5;}
+.notice-meta{font-size:.72rem;color:var(--muted);margin-top:.4rem;display:flex;gap:1rem;}
+
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .main{margin-left:0;padding:1rem;}
+  .form-grid{grid-template-columns:1fr;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="login-page">
+  <div class="login-box">
+    <div class="login-logo">EduNexus</div>
+    <div style="font-size:.72rem;color:var(--orange);margin-bottom:.3rem;letter-spacing:.1em">ADMIN PANEL</div>
+    <p class="login-sub">Restricted access — administrators only</p>
+    <div id="login-err" class="login-err"></div>
+    <div class="field"><label>Admin Username</label><input type="text" id="adm-user" placeholder="admin"/></div>
+    <div class="field"><label>Password</label><input type="password" id="adm-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()"/></div>
+    <button class="login-btn" onclick="adminLogin()">Login to Admin Panel →</button>
+    <p class="login-hint">Demo: <strong>admin</strong> / <strong>admin123</strong></p>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">EduNexus <span class="sidebar-badge">ADMIN</span></div>
+    <div class="sidebar-section">Overview</div>
+    <div class="nav-item active" onclick="showPanel('dashboard',this)"><span class="ic">📊</span> Dashboard</div>
+    <div class="sidebar-section">People</div>
+    <div class="nav-item" onclick="showPanel('students',this)"><span class="ic">🎒</span> Students</div>
+    <div class="nav-item" onclick="showPanel('faculty',this)"><span class="ic">👩‍🏫</span> Faculty</div>
+    <div class="sidebar-section">Academics</div>
+    <div class="nav-item" onclick="showPanel('subjects',this)"><span class="ic">📚</span> Subjects</div>
+    <div class="nav-item" onclick="showPanel('results',this)"><span class="ic">📊</span> Semester Results</div>
+    <div class="sidebar-section">Finance & Admin</div>
+    <div class="nav-item" onclick="showPanel('fees',this)"><span class="ic">💳</span> Fee Management</div>
+    <div class="nav-item" onclick="showPanel('leaves',this)"><span class="ic">🏖️</span> Leave Requests</div>
+    <div class="nav-item" onclick="showPanel('notices',this)"><span class="ic">📢</span> Notices</div>
+    <div class="nav-item" onclick="showPanel('users',this)"><span class="ic">🔑</span> All Users</div>
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="user-avatar">A</div>
+        <div class="user-info">
+          <div class="uname" id="admin-name">Admin</div>
+          <div class="urole">Administrator</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="adminLogout()">↩ Logout</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <h2 id="panel-title">Dashboard</h2>
+      <span class="date" id="curr-date"></span>
+    </div>
+    <div id="panel-content"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ══ MODALS ══ -->
+
+<!-- Add Student -->
+<div class="modal-overlay" id="modal-student">
+  <div class="modal">
+    <div class="modal-head"><h3 id="student-modal-title">Add New Student</h3><button class="modal-close" onclick="closeModal('modal-student')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field full"><label>Full Name</label><input type="text" id="s-name" placeholder="Aarav Sharma"/></div>
+        <div class="form-field"><label>Roll Number</label><input type="text" id="s-roll" placeholder="CS22001"/></div>
+        <div class="form-field"><label>Enrollment No</label><input type="text" id="s-enroll" placeholder="2022CS001"/></div>
+        <div class="form-field"><label>Username (Login ID)</label><input type="text" id="s-username" placeholder="2022CS001"/></div>
+        <div class="form-field"><label>Password</label><input type="password" id="s-password" placeholder="Min 6 chars"/></div>
+        <div class="form-field"><label>Email</label><input type="email" id="s-email" placeholder="student@college.edu"/></div>
+        <div class="form-field"><label>Phone</label><input type="tel" id="s-phone" placeholder="+91 XXXXX XXXXX"/></div>
+        <div class="form-field"><label>Course</label>
+          <select id="s-course"><option value="">Select Course</option></select></div>
+        <div class="form-field"><label>Current Semester</label>
+          <select id="s-sem"><option value="1">1</option><option value="2">2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+          <option value="7">7</option><option value="8">8</option></select></div>
+        <div class="form-field"><label>Batch Year</label><input type="number" id="s-batch" placeholder="2022" min="2000" max="2030"/></div>
+        <div class="form-field"><label>Date of Birth</label><input type="date" id="s-dob"/></div>
+        <div class="form-field"><label>Guardian Name</label><input type="text" id="s-guardian" placeholder="Parent/Guardian"/></div>
+        <div class="form-field"><label>Guardian Phone</label><input type="tel" id="s-gphone" placeholder="+91 XXXXX XXXXX"/></div>
+        <div class="form-field full"><label>Address</label><input type="text" id="s-address" placeholder="Full address"/></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('modal-student')" style="background:var(--surface);border:1px solid var(--border);color:var(--muted)">Cancel</button>
+      <button class="btn btn-primary" onclick="saveStudent()">Save Student</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Faculty -->
+<div class="modal-overlay" id="modal-faculty">
+  <div class="modal">
+    <div class="modal-head"><h3 id="faculty-modal-title">Add New Faculty</h3><button class="modal-close" onclick="closeModal('modal-faculty')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field full"><label>Full Name</label><input type="text" id="f-name" placeholder="Dr. Priya Sharma"/></div>
+        <div class="form-field"><label>Employee ID</label><input type="text" id="f-empid" placeholder="FAC003"/></div>
+        <div class="form-field"><label>Username (Login ID)</label><input type="text" id="f-username" placeholder="FAC003"/></div>
+        <div class="form-field"><label>Password</label><input type="password" id="f-password" placeholder="Min 6 chars"/></div>
+        <div class="form-field"><label>Email</label><input type="email" id="f-email" placeholder="faculty@college.edu"/></div>
+        <div class="form-field"><label>Phone</label><input type="tel" id="f-phone" placeholder="+91 XXXXX XXXXX"/></div>
+        <div class="form-field"><label>Department</label>
+          <select id="f-dept"><option value="">Select Department</option></select></div>
+        <div class="form-field"><label>Designation</label>
+          <select id="f-desig">
+            <option>Assistant Professor</option><option>Associate Professor</option>
+            <option>Professor</option><option>HOD</option><option>Lab Instructor</option>
+          </select></div>
+        <div class="form-field"><label>Qualification</label><input type="text" id="f-qual" placeholder="Ph.D, M.Tech"/></div>
+        <div class="form-field"><label>Specialization</label><input type="text" id="f-spec" placeholder="Machine Learning"/></div>
+        <div class="form-field"><label>Joining Date</label><input type="date" id="f-join"/></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('modal-faculty')" style="background:var(--surface);border:1px solid var(--border);color:var(--muted)">Cancel</button>
+      <button class="btn btn-primary" onclick="saveFaculty()">Save Faculty</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Subject -->
+<div class="modal-overlay" id="modal-subject">
+  <div class="modal">
+    <div class="modal-head"><h3>Add New Subject</h3><button class="modal-close" onclick="closeModal('modal-subject')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field"><label>Subject Code</label><input type="text" id="sub-code" placeholder="CS607"/></div>
+        <div class="form-field"><label>Subject Name</label><input type="text" id="sub-name" placeholder="Artificial Intelligence"/></div>
+        <div class="form-field"><label>Course</label><select id="sub-course"><option value="">Select Course</option></select></div>
+        <div class="form-field"><label>Semester</label>
+          <select id="sub-sem"><option value="1">1</option><option value="2">2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+          <option value="7">7</option><option value="8">8</option></select></div>
+        <div class="form-field"><label>Credits</label><input type="number" id="sub-credits" value="3" min="1" max="10"/></div>
+        <div class="form-field"><label>Type</label>
+          <select id="sub-type"><option value="theory">Theory</option><option value="lab">Lab</option>
+          <option value="elective">Elective</option><option value="project">Project</option></select></div>
+        <div class="form-field"><label>Max Internal Marks</label><input type="number" id="sub-int" value="30"/></div>
+        <div class="form-field"><label>Max External Marks</label><input type="number" id="sub-ext" value="70"/></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('modal-subject')" style="background:var(--surface);border:1px solid var(--border);color:var(--muted)">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSubject()">Save Subject</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Result -->
+<div class="modal-overlay" id="modal-result">
+  <div class="modal">
+    <div class="modal-head"><h3>Upload Semester Result</h3><button class="modal-close" onclick="closeModal('modal-result')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field full"><label>Student</label><select id="r-student"><option value="">Select Student</option></select></div>
+        <div class="form-field"><label>Semester</label>
+          <select id="r-sem"><option value="1">1</option><option value="2">2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+          <option value="7">7</option><option value="8">8</option></select></div>
+        <div class="form-field"><label>SGPA (out of 10)</label><input type="number" id="r-sgpa" placeholder="8.5" step="0.01" min="0" max="10"/></div>
+        <div class="form-field"><label>CGPA (out of 10)</label><input type="number" id="r-cgpa" placeholder="8.3" step="0.01" min="0" max="10"/></div>
+        <div class="form-field"><label>Credits Earned</label><input type="number" id="r-credits" placeholder="22"/></div>
+        <div class="form-field"><label>Status</label>
+          <select id="r-status"><option value="passed">Passed</option><option value="failed">Failed</option>
+          <option value="detained">Detained</option><option value="ongoing">Ongoing</option></select></div>
+        <div class="form-field"><label>Declared On</label><input type="date" id="r-date"/></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('modal-result')" style="background:var(--surface);border:1px solid var(--border);color:var(--muted)">Cancel</button>
+      <button class="btn btn-primary" onclick="saveResult()">Save Result</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Fee -->
+<div class="modal-overlay" id="modal-fee">
+  <div class="modal">
+    <div class="modal-head"><h3>Add Fee Record</h3><button class="modal-close" onclick="closeModal('modal-fee')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field full"><label>Student</label><select id="fee-student"><option value="">Select Student</option></select></div>
+        <div class="form-field"><label>Fee Category</label>
+          <select id="fee-cat">
+            <option value="1">Tuition Fee</option><option value="2">Hostel Fee</option>
+            <option value="3">Lab & Exam Fee</option><option value="4">Alumni Fee</option>
+          </select></div>
+        <div class="form-field"><label>Semester</label>
+          <select id="fee-sem"><option value="1">1</option><option value="2">2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+          <option value="7">7</option><option value="8">8</option></select></div>
+        <div class="form-field"><label>Academic Year</label><input type="text" id="fee-year" placeholder="2024-25"/></div>
+        <div class="form-field"><label>Amount Due (₹)</label><input type="number" id="fee-amount" placeholder="45000"/></div>
+        <div class="form-field"><label>Due Date</label><input type="date" id="fee-due"/></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('modal-fee')" style="background:var(--surface);border:1px solid var(--border);color:var(--muted)">Cancel</button>
+      <button class="btn btn-primary" onclick="saveFee()">Add Fee Record</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '/api/admin';
+
+// ── UTILS ─────────────────────────────────────────────────────
+async function api(path, opts={}) {
+  const res = await fetch(path, {
+    credentials:'include', headers:{'Content-Type':'application/json',...(opts.headers||{})}, ...opts
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+function toast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = (err?'✗ ':'✓ ') + msg;
+  t.className = 'toast show' + (err?' err':'');
+  setTimeout(()=>t.className='toast', 3000);
+}
+
+function fmtDate(s) { return s ? new Date(s).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—'; }
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); });
+});
+
+// ── AUTH ──────────────────────────────────────────────────────
+async function adminLogin() {
+  const username = document.getElementById('adm-user').value.trim();
+  const password = document.getElementById('adm-pass').value.trim();
+  const errEl    = document.getElementById('login-err');
+  errEl.style.display = 'none';
+  try {
+    const data = await api('/api/admin/login', {method:'POST', body:JSON.stringify({username,password})});
+    document.getElementById('login-page').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('admin-name').textContent = data.username || 'Admin';
+    document.getElementById('curr-date').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    showPanel('dashboard', document.querySelector('.nav-item'));
+    loadDropdowns();
+  } catch(err) {
+    errEl.textContent = err.message;
+    errEl.style.display = 'block';
+  }
+}
+
+async function adminLogout() {
+  await api('/api/logout', {method:'POST'});
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-page').style.display = 'flex';
+  document.getElementById('adm-pass').value = '';
+}
+
+// ── PANEL SWITCHER ────────────────────────────────────────────
+const panelTitles = {
+  dashboard:'Dashboard', students:'Manage Students', faculty:'Manage Faculty',
+  subjects:'Manage Subjects', results:'Semester Results', fees:'Fee Management',
+  leaves:'Leave Requests', notices:'Notices', users:'All Users'
+};
+
+async function showPanel(name, el) {
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.getElementById('panel-title').textContent = panelTitles[name]||name;
+  const content = document.getElementById('panel-content');
+  content.innerHTML = '<div style="color:var(--muted);padding:2rem">Loading…</div>';
+  try { content.innerHTML = await builders[name](); }
+  catch(e) { content.innerHTML = `<div style="color:var(--red);padding:2rem">⚠ ${e.message}</div>`; }
+}
+
+// ── DROPDOWN LOADER ───────────────────────────────────────────
+let _courses=[], _depts=[], _students=[];
+async function loadDropdowns() {
+  try {
+    _courses  = await api('/api/admin/courses');
+    _depts    = await api('/api/admin/departments');
+    _students = await api('/api/admin/students');
+    // Populate course selects
+    const courseOpts = _courses.map(c=>`<option value="${c.id}">${c.name} (${c.code})</option>`).join('');
+    ['s-course','sub-course'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.innerHTML = '<option value="">Select Course</option>' + courseOpts;
+    });
+    // Dept select
+    const deptOpts = _depts.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
+    const fd = document.getElementById('f-dept');
+    if(fd) fd.innerHTML = '<option value="">Select Department</option>' + deptOpts;
+    // Student select for results/fees
+    const stuOpts = _students.map(s=>`<option value="${s.id}">${s.full_name} (${s.roll_number})</option>`).join('');
+    ['r-student','fee-student'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.innerHTML = '<option value="">Select Student</option>' + stuOpts;
+    });
+  } catch(e) { console.error('Dropdown load failed', e); }
+}
+
+// ── PANEL BUILDERS ────────────────────────────────────────────
+const builders = {
+
+  // DASHBOARD
+  async dashboard() {
+    const d = await api('/api/admin/stats');
+    const recentStudents = d.recent_students.map(s=>`
+      <tr><td>${s.full_name}</td><td>${s.roll_number}</td><td>${s.course}</td><td>${s.batch_year}</td></tr>`).join('');
+    const recentLeaves = d.recent_leaves.map(l=>`
+      <tr><td>${l.full_name}</td><td>${l.leave_type}</td><td>${fmtDate(l.from_date)}</td>
+      <td><span class="badge ${l.status==='approved'?'green':l.status==='rejected'?'red':'yellow'}">${l.status}</span></td></tr>`).join('');
+    return `
+      <div class="stats-row">
+        <div class="stat-card blue"><div class="stat-label">Total Students</div><div class="stat-value">${d.total_students}</div></div>
+        <div class="stat-card purple"><div class="stat-label">Total Faculty</div><div class="stat-value">${d.total_faculty}</div></div>
+        <div class="stat-card green"><div class="stat-label">Subjects</div><div class="stat-value">${d.total_subjects}</div></div>
+        <div class="stat-card yellow"><div class="stat-label">Pending Leaves</div><div class="stat-value">${d.pending_leaves}</div></div>
+        <div class="stat-card red"><div class="stat-label">Total Fees Due</div><div class="stat-value">₹${d.total_fees_due.toLocaleString('en-IN')}</div></div>
+        <div class="stat-card orange"><div class="stat-label">Notices</div><div class="stat-value">${d.total_notices}</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="section-card"><div class="section-head"><h3>Recently Added Students</h3></div>
+          <div class="table-wrap"><table><thead><tr><th>Name</th><th>Roll No</th><th>Course</th><th>Batch</th></tr></thead>
+          <tbody>${recentStudents||'<tr><td colspan=4 style="text-align:center;color:var(--muted)">No data</td></tr>'}</tbody></table></div></div>
+        <div class="section-card"><div class="section-head"><h3>Recent Leave Requests</h3></div>
+          <div class="table-wrap"><table><thead><tr><th>Faculty</th><th>Type</th><th>From</th><th>Status</th></tr></thead>
+          <tbody>${recentLeaves||'<tr><td colspan=4 style="text-align:center;color:var(--muted)">No data</td></tr>'}</tbody></table></div></div>
+      </div>`;
+  },
+
+  // STUDENTS
+  async students() {
+    const students = await api('/api/admin/students');
+    _students = students;
+    // refresh student dropdowns
+    const stuOpts = students.map(s=>`<option value="${s.id}">${s.full_name} (${s.roll_number})</option>`).join('');
+    ['r-student','fee-student'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<option value="">Select Student</option>'+stuOpts;});
+
+    const rows = students.map(s=>`
+      <tr>
+        <td>${s.roll_number}</td>
+        <td><strong>${s.full_name}</strong><div style="font-size:.72rem;color:var(--muted)">${s.email||'—'}</div></td>
+        <td>${s.course_code}</td>
+        <td><span class="badge blue">Sem ${s.current_sem}</span></td>
+        <td>${s.batch_year}</td>
+        <td>${s.username}</td>
+        <td style="display:flex;gap:.4rem;flex-wrap:wrap">
+          <button class="btn btn-danger btn-sm" onclick="deleteStudent(${s.id},'${s.full_name}')">🗑 Delete</button>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--muted)">No students found</td></tr>';
+
+    return `
+      <div class="section-card">
+        <div class="section-head">
+          <h3>All Students <span style="font-size:.8rem;color:var(--muted);font-weight:400">(${students.length} total)</span></h3>
+          <div style="display:flex;gap:.8rem;align-items:center;flex-wrap:wrap">
+            <input class="search-bar" placeholder="🔍 Search students…" oninput="filterTable(this,'students-tbody')"/>
+            <button class="btn btn-primary" onclick="openAddStudent()">+ Add Student</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Roll No</th><th>Name</th><th>Course</th><th>Semester</th><th>Batch</th><th>Login ID</th><th>Actions</th></tr></thead>
+          <tbody id="students-tbody">${rows}</tbody></table>
+        </div>
+      </div>`;
+  },
+
+  // FACULTY
+  async faculty() {
+    const faculty = await api('/api/admin/faculty');
+    const rows = faculty.map(f=>`
+      <tr>
+        <td>${f.employee_id}</td>
+        <td><strong>${f.full_name}</strong><div style="font-size:.72rem;color:var(--muted)">${f.email||'—'}</div></td>
+        <td>${f.dept_name}</td>
+        <td>${f.designation}</td>
+        <td>${f.qualification||'—'}</td>
+        <td>${f.username}</td>
+        <td>
+          <button class="btn btn-danger btn-sm" onclick="deleteFaculty(${f.id},'${f.full_name}')">🗑 Delete</button>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--muted)">No faculty found</td></tr>';
+
+    return `
+      <div class="section-card">
+        <div class="section-head">
+          <h3>All Faculty <span style="font-size:.8rem;color:var(--muted);font-weight:400">(${faculty.length} total)</span></h3>
+          <div style="display:flex;gap:.8rem;align-items:center;flex-wrap:wrap">
+            <input class="search-bar" placeholder="🔍 Search faculty…" oninput="filterTable(this,'faculty-tbody')"/>
+            <button class="btn btn-primary" onclick="openAddFaculty()">+ Add Faculty</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Emp ID</th><th>Name</th><th>Department</th><th>Designation</th><th>Qualification</th><th>Login ID</th><th>Actions</th></tr></thead>
+          <tbody id="faculty-tbody">${rows}</tbody></table>
+        </div>
+      </div>`;
+  },
+
+  // SUBJECTS
+  async subjects() {
+    const subjects = await api('/api/admin/subjects');
+    const rows = subjects.map(s=>`
+      <tr>
+        <td><code style="background:var(--surface);padding:.2rem .5rem;border-radius:4px;font-size:.8rem">${s.code}</code></td>
+        <td>${s.name}</td>
+        <td>${s.course_name}</td>
+        <td>Sem ${s.semester}</td>
+        <td>${s.credits}</td>
+        <td><span class="badge ${s.type==='lab'?'yellow':s.type==='elective'?'purple':s.type==='project'?'green':'blue'}">${s.type}</span></td>
+        <td>${s.max_internal} + ${s.max_external}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteSubject(${s.id},'${s.name}')">🗑</button></td>
+      </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--muted)">No subjects found</td></tr>';
+
+    return `
+      <div class="section-card">
+        <div class="section-head">
+          <h3>All Subjects</h3>
+          <div style="display:flex;gap:.8rem;align-items:center">
+            <input class="search-bar" placeholder="🔍 Search…" oninput="filterTable(this,'subjects-tbody')"/>
+            <button class="btn btn-primary" onclick="openModal('modal-subject')">+ Add Subject</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Code</th><th>Name</th><th>Course</th><th>Semester</th><th>Credits</th><th>Type</th><th>Marks (Int+Ext)</th><th>Action</th></tr></thead>
+          <tbody id="subjects-tbody">${rows}</tbody></table>
+        </div>
+      </div>`;
+  },
+
+  // RESULTS
+  async results() {
+    const results = await api('/api/admin/results');
+    const rows = results.map(r=>`
+      <tr>
+        <td>${r.roll_number}</td><td>${r.full_name}</td>
+        <td>Sem ${r.semester}</td>
+        <td>${r.sgpa||'—'}</td><td>${r.cgpa||'—'}</td>
+        <td>${r.credits_earned||0}</td>
+        <td><span class="badge ${r.status==='passed'?'green':r.status==='ongoing'?'blue':r.status==='failed'?'red':'yellow'}">${r.status}</span></td>
+        <td>${fmtDate(r.declared_on)}</td>
+      </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--muted)">No results found</td></tr>';
+
+    return `
+      <div class="section-card">
+        <div class="section-head">
+          <h3>Semester Results</h3>
+          <button class="btn btn-primary" onclick="openModal('modal-result')">+ Upload Result</button>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Roll No</th><th>Name</th><th>Semester</th><th>SGPA</th><th>CGPA</th><th>Credits</th><th>Status</th><th>Declared</th></tr></thead>
+          <tbody>${rows}</tbody></table>
+        </div>
+      </div>`;
+  },
+
+  // FEES
+  async fees() {
+    const fees = await api('/api/admin/fees');
+    const due = fees.filter(f=>f.status==='due');
+    const paid = fees.filter(f=>f.status==='paid');
+    const total_due = due.reduce((a,f)=>a+(parseFloat(f.amount_due)-parseFloat(f.amount_paid)),0);
+    const rows = fees.map(f=>`
+      <tr>
+        <td>${f.roll_number}</td><td>${f.full_name}</td>
+        <td>${f.category_name}</td>
+        <td>Sem ${f.semester} · ${f.academic_year}</td>
+        <td>₹${parseFloat(f.amount_due).toLocaleString('en-IN')}</td>
+        <td>₹${parseFloat(f.amount_paid||0).toLocaleString('en-IN')}</td>
+        <td><span class="badge ${f.status==='paid'?'green':f.status==='due'?'red':'yellow'}">${f.status}</span></td>
+        <td>${fmtDate(f.due_date)}</td>
+        <td>${f.status!=='paid'?`<button class="btn btn-success btn-sm" onclick="markFeePaid(${f.id})">✓ Mark Paid</button>`:'—'}</td>
+      </tr>`).join('') || '<tr><td colspan="9" style="text-align:center;color:var(--muted)">No records</td></tr>';
+
+    return `
+      <div class="stats-row">
+        <div class="stat-card red"><div class="stat-label">Total Due</div><div class="stat-value">₹${total_due.toLocaleString('en-IN')}</div></div>
+        <div class="stat-card green"><div class="stat-label">Paid Records</div><div class="stat-value">${paid.length}</div></div>
+        <div class="stat-card yellow"><div class="stat-label">Pending Records</div><div class="stat-value">${due.length}</div></div>
+      </div>
+      <div class="section-card">
+        <div class="section-head">
+          <h3>Fee Records</h3>
+          <button class="btn btn-primary" onclick="openModal('modal-fee')">+ Add Fee Record</button>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Roll No</th><th>Student</th><th>Category</th><th>Period</th><th>Amount Due</th><th>Paid</th><th>Status</th><th>Due Date</th><th>Action</th></tr></thead>
+          <tbody>${rows}</tbody></table>
+        </div>
+      </div>`;
+  },
+
+  // LEAVES
+  async leaves() {
+    const leaves = await api('/api/admin/leaves');
+    const pending = leaves.filter(l=>l.status==='pending');
+    const rows = leaves.map(l=>`
+      <tr>
+        <td>${l.full_name}<div style="font-size:.72rem;color:var(--muted)">${l.employee_id}</div></td>
+        <td><span class="badge orange">${l.leave_type}</span></td>
+        <td>${fmtDate(l.from_date)}</td><td>${fmtDate(l.to_date)}</td>
+        <td>${l.days}</td>
+        <td style="max-width:200px;white-space:normal">${l.reason||'—'}</td>
+        <td><span class="badge ${l.status==='approved'?'green':l.status==='rejected'?'red':'yellow'}">${l.status}</span></td>
+        <td>${l.status==='pending'?`
+          <button class="btn btn-success btn-sm" onclick="reviewLeave(${l.id},'approved')">✓ Approve</button>
+          <button class="btn btn-danger btn-sm" onclick="reviewLeave(${l.id},'rejected')" style="margin-top:.3rem">✗ Reject</button>`:'—'}
+        </td>
+      </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--muted)">No leave applications</td></tr>';
+
+    return `
+      <div class="stats-row">
+        <div class="stat-card yellow"><div class="stat-label">Pending</div><div class="stat-value">${pending.length}</div></div>
+        <div class="stat-card green"><div class="stat-label">Approved</div><div class="stat-value">${leaves.filter(l=>l.status==='approved').length}</div></div>
+        <div class="stat-card red"><div class="stat-label">Rejected</div><div class="stat-value">${leaves.filter(l=>l.status==='rejected').length}</div></div>
+      </div>
+      <div class="section-card">
+        <div class="section-head"><h3>All Leave Applications</h3></div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Faculty</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody>${rows}</tbody></table>
+        </div>
+      </div>`;
+  },
+
+  // NOTICES
+  async notices() {
+    const notices = await api('/api/notices');
+    const items = notices.map(n=>`
+      <div class="notice-item">
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.4rem">
+          <h4>${n.title}</h4>
+          <span class="badge ${n.priority==='urgent'?'red':n.priority==='important'?'yellow':'blue'}">${n.priority}</span>
+          <span class="badge purple">${n.audience}</span>
+        </div>
+        <p>${n.body}</p>
+        <div class="notice-meta">
+          <span>👤 ${n.posted_by_name}</span>
+          <span>📅 ${fmtDate(n.posted_at)}</span>
+        </div>
+      </div>`).join('') || '<div style="text-align:center;color:var(--muted);padding:2rem">No notices</div>';
+    return `<div class="section-card"><div class="section-head"><h3>All Notices</h3></div><div style="padding:1.2rem">${items}</div></div>`;
+  },
+
+  // USERS
+  async users() {
+    const users = await api('/api/admin/users');
+    const rows = users.map(u=>`
+      <tr>
+        <td>${u.id}</td>
+        <td><strong>${u.username}</strong></td>
+        <td><span class="badge ${u.role==='admin'?'orange':u.role==='faculty'?'purple':'blue'}">${u.role}</span></td>
+        <td>${u.email||'—'}</td>
+        <td>${u.phone||'—'}</td>
+        <td>${fmtDate(u.last_login)}</td>
+        <td><button class="btn btn-edit btn-sm" onclick="resetPwd(${u.id},'${u.username}')">🔑 Reset PWD</button></td>
+      </tr>`).join('');
+    return `
+      <div class="section-card">
+        <div class="section-head">
+          <h3>All Users <span style="font-size:.8rem;color:var(--muted);font-weight:400">(${users.length} total)</span></h3>
+          <input class="search-bar" placeholder="🔍 Search users…" oninput="filterTable(this,'users-tbody')"/>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>ID</th><th>Username</th><th>Role</th><th>Email</th><th>Phone</th><th>Last Login</th><th>Action</th></tr></thead>
+          <tbody id="users-tbody">${rows}</tbody></table>
+        </div>
+      </div>`;
+  }
+};
+
+// ── ACTIONS ───────────────────────────────────────────────────
+
+// Students
+function openAddStudent() {
+  document.getElementById('student-modal-title').textContent = 'Add New Student';
+  // reload course dropdown
+  const courseOpts = _courses.map(c=>`<option value="${c.id}">${c.name} (${c.code})</option>`).join('');
+  document.getElementById('s-course').innerHTML = '<option value="">Select Course</option>' + courseOpts;
+  openModal('modal-student');
+}
+
+async function saveStudent() {
+  const d = {
+    full_name: document.getElementById('s-name').value,
+    roll_number: document.getElementById('s-roll').value,
+    enrollment_no: document.getElementById('s-enroll').value,
+    username: document.getElementById('s-username').value,
+    password: document.getElementById('s-password').value,
+    email: document.getElementById('s-email').value,
+    phone: document.getElementById('s-phone').value,
+    course_id: document.getElementById('s-course').value,
+    current_sem: document.getElementById('s-sem').value,
+    batch_year: document.getElementById('s-batch').value,
+    dob: document.getElementById('s-dob').value,
+    guardian_name: document.getElementById('s-guardian').value,
+    guardian_phone: document.getElementById('s-gphone').value,
+    address: document.getElementById('s-address').value,
+  };
+  try {
+    const res = await api('/api/admin/students', {method:'POST', body:JSON.stringify(d)});
+    toast(res.message);
+    closeModal('modal-student');
+    showPanel('students', document.querySelector('.nav-item[onclick*="students"]'));
+  } catch(e) { toast(e.message, true); }
+}
+
+async function deleteStudent(id, name) {
+  if (!confirm(`Delete student "${name}"? This cannot be undone.`)) return;
+  try {
+    const res = await api(`/api/admin/students/${id}`, {method:'DELETE'});
+    toast(res.message);
+    showPanel('students', null);
+  } catch(e) { toast(e.message, true); }
+}
+
+// Faculty
+function openAddFaculty() {
+  const deptOpts = _depts.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
+  document.getElementById('f-dept').innerHTML = '<option value="">Select Department</option>' + deptOpts;
+  openModal('modal-faculty');
+}
+
+async function saveFaculty() {
+  const d = {
+    full_name: document.getElementById('f-name').value,
+    employee_id: document.getElementById('f-empid').value,
+    username: document.getElementById('f-username').value,
+    password: document.getElementById('f-password').value,
+    email: document.getElementById('f-email').value,
+    phone: document.getElementById('f-phone').value,
+    department_id: document.getElementById('f-dept').value,
+    designation: document.getElementById('f-desig').value,
+    qualification: document.getElementById('f-qual').value,
+    specialization: document.getElementById('f-spec').value,
+    joining_date: document.getElementById('f-join').value,
+  };
+  try {
+    const res = await api('/api/admin/faculty', {method:'POST', body:JSON.stringify(d)});
+    toast(res.message);
+    closeModal('modal-faculty');
+    showPanel('faculty', null);
+  } catch(e) { toast(e.message, true); }
+}
+
+async function deleteFaculty(id, name) {
+  if (!confirm(`Delete faculty "${name}"? This cannot be undone.`)) return;
+  try {
+    const res = await api(`/api/admin/faculty/${id}`, {method:'DELETE'});
+    toast(res.message);
+    showPanel('faculty', null);
+  } catch(e) { toast(e.message, true); }
+}
+
+// Subjects
+async function saveSubject() {
+  const d = {
+    code: document.getElementById('sub-code').value,
+    name: document.getElementById('sub-name').value,
+    course_id: document.getElementById('sub-course').value,
+    semester: document.getElementById('sub-sem').value,
+    credits: document.getElementById('sub-credits').value,
+    type: document.getElementById('sub-type').value,
+    max_internal: document.getElementById('sub-int').value,
+    max_external: document.getElementById('sub-ext').value,
+  };
+  try {
+    const res = await api('/api/admin/subjects', {method:'POST', body:JSON.stringify(d)});
+    toast(res.message);
+    closeModal('modal-subject');
+    showPanel('subjects', null);
+  } catch(e) { toast(e.message, true); }
+}
+
+async function deleteSubject(id, name) {
+  if (!confirm(`Delete subject "${name}"?`)) return;
+  try {
+    const res = await api(`/api/admin/subjects/${id}`, {method:'DELETE'});
+    toast(res.message);
+    showPanel('subjects', null);
+  } catch(e) { toast(e.message, true); }
+}
+
+// Results
+async function saveResult() {
+  const d = {
+    student_id: document.getElementById('r-student').value,
+    semester: document.getElementById('r-sem').value,
+    sgpa: document.getElementById('r-sgpa').value,
+    cgpa: document.getElementById('r-cgpa').value,
+    credits_earned: document.getElementById('r-credits').value,
+    status: document.getElementById('r-status').value,
+    declared_on: document.getElementById('r-date').value,
+  };
+  try {
+    const res = await api('/api/admin/results', {method:'POST', body:JSON.stringify(d)});
+    toast(res.message);
+    closeModal('modal-result');
+    showPanel('results', null);
+  } catch(e) { toast(e.message, true); }
+}
+
+// Fees
+async function saveFee() {
+  const d = {
+    student_id: document.getElementById('fee-student').value,
+    category_id: document.getElementById('fee-cat').value,
+    semester: document.getElementById('fee-sem').value,
+    academic_year: document.getElementById('fee-year').value,
+    amount_due: document.getElementById('fee-amount').value,
+    due_date: document.getElementById('fee-due').value,
+  };
+  try {
+    const res = await api('/api/admin/fees', {method:'POST', body:JSON.stringify(d)});
+    toast(res.message);
+    closeModal('modal-fee');
+    showPanel('fees', null);
+  } catch(e) { toast(e.message, true); }
+}
+
+async function markFeePaid(id) {
+  const txn = prompt('Enter transaction ID (optional):') || '';
+  try {
+    const res = await api(`/api/admin/fees/${id}/pay`, {
+      method:'PUT',
+      body: JSON.stringify({amount_paid: 99999, paid_date: new Date().toISOString().slice(0,10), transaction_id: txn})
+    });
+    toast(res.message);
+    showPanel('fees', null);
+  } catch(e) { toast(e.message, true); }
+}
+
+// Leaves
+async function reviewLeave(id, status) {
+  try {
+    const res = await api(`/api/admin/leaves/${id}`, {method:'PUT', body:JSON.stringify({status})});
+    toast(res.message);
+    showPanel('leaves', null);
+  } catch(e) { toast(e.message, true); }
+}
+
+// Reset Password
+async function resetPwd(userId, username) {
+  const newPwd = prompt(`Enter new password for "${username}" (min 6 chars):`);
+  if (!newPwd || newPwd.length < 6) { toast('Password must be at least 6 characters', true); return; }
+  try {
+    const res = await api('/api/admin/reset-password', {method:'POST', body:JSON.stringify({user_id:userId, new_password:newPwd})});
+    toast(res.message);
+  } catch(e) { toast(e.message, true); }
+}
+
+// ── SEARCH FILTER ─────────────────────────────────────────────
+function filterTable(input, tbodyId) {
+  const val = input.value.toLowerCase();
+  document.querySelectorAll(`#${tbodyId} tr`).forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(val) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

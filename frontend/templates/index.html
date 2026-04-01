@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EduNexus LMS</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/static/css/style.css"/>
+</head>
+<body>
+
+<!-- ═══ LANDING ═══ -->
+<div id="landing">
+  <nav class="nav">
+    <div class="logo">EduNexus</div>
+    <span class="nav-badge">LMS v2.0</span>
+  </nav>
+  <div class="hero">
+    <span class="hero-tag">🎓 Learning Management System</span>
+    <h1>Your Campus,<br/><span>Reimagined</span></h1>
+    <p>One platform for students and faculty — access grades, attendance, timetables, and more.</p>
+    <div class="role-cards">
+      <div class="role-card student" onclick="showLogin('student')">
+        <div class="role-icon">🎒</div>
+        <h3>Student Portal</h3>
+        <p>Access your CGPA, report cards, attendance, timetable, subjects, fee details & more.</p>
+        <button class="role-btn">Login as Student</button>
+      </div>
+      <div class="role-card faculty" onclick="showLogin('faculty')">
+        <div class="role-icon">📚</div>
+        <h3>Faculty Portal</h3>
+        <p>Mark attendance, manage timetables, apply for leave, post notices & track class records.</p>
+        <button class="role-btn">Login as Faculty</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="login">
+  <div class="login-box">
+    <button class="login-back" onclick="showLanding()">← Back</button>
+    <h2 id="login-title">Student Login</h2>
+    <p class="sub" id="login-sub">Enter your credentials to access the portal</p>
+    <div class="field">
+      <label>ENROLLMENT / EMPLOYEE ID</label>
+      <input type="text" id="login-id" placeholder="e.g. 2022CS001"/>
+    </div>
+    <div class="field">
+      <label>PASSWORD</label>
+      <input type="password" id="login-pass" placeholder="••••••••"
+             onkeydown="if(event.key==='Enter') doLogin()"/>
+    </div>
+    <div id="login-error" style="color:var(--red);font-size:.82rem;margin-bottom:.5rem;display:none"></div>
+    <button class="login-submit student" id="login-btn" onclick="doLogin()">Login →</button>
+    <p class="login-hint">Demo credentials: <strong>2022CS001</strong> / <strong>password123</strong> (student) &nbsp;|&nbsp; <strong>FAC001</strong> / <strong>password123</strong> (faculty)</p>
+  </div>
+</div>
+
+<!-- ═══ DASHBOARD ═══ -->
+<div id="dashboard">
+  <button class="hamburger" onclick="toggleSidebar()">☰</button>
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">EduNexus</div>
+    <!-- Student nav -->
+    <div id="student-nav">
+      <div class="sidebar-section">Overview</div>
+      <div class="nav-item active" onclick="loadPanel('s-home',this)"><span>🏠</span> Dashboard</div>
+      <div class="nav-item" onclick="loadPanel('s-cgpa',this)"><span>📊</span> CGPA & Results</div>
+      <div class="nav-item" onclick="loadPanel('s-report',this)"><span>📋</span> Report Card</div>
+      <div class="sidebar-section">Academics</div>
+      <div class="nav-item" onclick="loadPanel('s-att',this)"><span>✅</span> Attendance</div>
+      <div class="nav-item" onclick="loadPanel('s-tt',this)"><span>🗓️</span> Timetable</div>
+      <div class="nav-item" onclick="loadPanel('s-sub',this)"><span>📖</span> Subjects</div>
+      <div class="nav-item" onclick="loadPanel('s-modules',this)"><span>🧩</span> Modules</div>
+      <div class="sidebar-section">Campus</div>
+      <div class="nav-item" onclick="loadPanel('s-fees',this)"><span>💳</span> Fees</div>
+      <div class="nav-item" onclick="loadPanel('s-about',this)"><span>🏛️</span> About College</div>
+      <div class="nav-item" onclick="loadPanel('s-notices',this)"><span>📢</span> Notices</div>
+    </div>
+    <!-- Faculty nav -->
+    <div id="faculty-nav" style="display:none">
+      <div class="sidebar-section">Overview</div>
+      <div class="nav-item active fac" onclick="loadPanel('f-home',this)"><span>🏠</span> Dashboard</div>
+      <div class="nav-item fac" onclick="loadPanel('f-tt',this)"><span>🗓️</span> My Timetable</div>
+      <div class="nav-item fac" onclick="loadPanel('f-att',this)"><span>✅</span> Mark Attendance</div>
+      <div class="sidebar-section">Management</div>
+      <div class="nav-item fac" onclick="loadPanel('f-leave',this)"><span>🏖️</span> Apply Leave</div>
+      <div class="nav-item fac" onclick="loadPanel('f-marks',this)"><span>📝</span> Upload Marks</div>
+      <div class="nav-item fac" onclick="loadPanel('f-notices',this)"><span>📢</span> Post Notice</div>
+      <div class="sidebar-section">Records</div>
+      <div class="nav-item fac" onclick="loadPanel('f-students',this)"><span>👥</span> My Students</div>
+      <div class="nav-item fac" onclick="loadPanel('f-schedule',this)"><span>📅</span> Class Schedule</div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="user-avatar" id="user-avatar">S</div>
+        <div class="user-info">
+          <div class="name" id="user-name">—</div>
+          <div class="role-tag" id="user-role">—</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">↩ Logout</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <h2 id="panel-title">Dashboard</h2>
+      <span class="date" id="curr-date"></span>
+    </div>
+    <div id="panel-content">
+      <!-- Panels are injected here dynamically -->
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="loading-overlay" style="display:none;position:fixed;inset:0;background:#0b0f1aaa;z-index:999;align-items:center;justify-content:center;">
+  <div style="color:var(--accent);font-family:var(--font-head);font-size:1.1rem">Loading...</div>
+</div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
