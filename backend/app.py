@@ -1,33 +1,31 @@
-# ============================================================
-#  EduNexus LMS  ·  Flask Backend  (app.py)
-#  Run:  python app.py
-# ============================================================
-from dotenv import load_dotenv
-load_dotenv()
 from flask import Flask, request, jsonify, render_template, session
 from flask_cors import CORS
 import mysql.connector
 import bcrypt
 import os
+from dotenv import load_dotenv
 from datetime import datetime, date
 from functools import wraps
 from decimal import Decimal
 
-app = Flask(__name__, template_folder='../frontend/templates',
-                       static_folder='../frontend/static')
-app.secret_key = os.environ.get('SECRET_KEY', 'edunexus-secret-change-in-production')
+# Load .env file
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+
+app = Flask(__name__, 
+            template_folder='../frontend/templates',
+            static_folder='../frontend/static')
+
+app.secret_key = os.environ.get('SECRET_KEY', 'edunexus-secret')
 CORS(app, supports_credentials=True)
 
-# Security settings
-app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SECURE'] = False  # True in production (HTTPS)
-
-# ── DB CONFIG ────────────────────────────────────────────────
 DB_CONFIG = {
-    'host': os.getenv('DB_HOST'),
-    'user': os.getenv('DB_USER'),
-    'password': os.getenv('DB_PASSWORD'),
-    'database': os.getenv('DB_NAME'),
+    'host':     os.environ.get('DB_HOST', 'localhost'),
+    'port':     int(os.environ.get('DB_PORT', 3306)),
+    'user':     os.environ.get('DB_USER', 'root'),
+    'password': os.environ.get('DB_PASSWORD', ''),
+    'database': os.environ.get('DB_NAME', 'railway'),
+    'charset':  'utf8mb4',
+    'autocommit': True,
 }
 
 def get_db():

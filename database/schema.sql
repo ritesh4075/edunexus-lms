@@ -1,8 +1,3 @@
--- ============================================================
---  EduNexus LMS  ·  MySQL Schema
---  Run:  mysql -u root -p < database/schema.sql
--- ============================================================
-
 CREATE DATABASE IF NOT EXISTS edunexus;
 USE edunexus;
 

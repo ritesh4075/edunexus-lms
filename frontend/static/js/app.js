@@ -1,8 +1,3 @@
-// ============================================================
-//  EduNexus LMS  ·  app.js
-//  All API calls go to Flask backend at /api/...
-// ============================================================
-
 const API = '';   // same origin — Flask serves both frontend & API
 let currentRole  = 'student';
 let currentUser  = null;
